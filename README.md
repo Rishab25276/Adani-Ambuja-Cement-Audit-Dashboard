@@ -7,6 +7,8 @@
 - **Main Features**: 8 dashboard views, multi-select filters, PDF export, dark/light theme, audio descriptions
 
 ## URLs
+- **GitHub Repository**: https://github.com/Rishab25276/Adani-Ambuja-Cement-Audit-Dashboard
+- **Live Demo**: https://3000-ioyjkajzw2h2lj6y89w5f-5c13a017.sandbox.novita.ai
 - **Local Development**: Open `index.html` directly in browser or use a local server
 - **Production**: Can be deployed to any static hosting (GitHub Pages, Cloudflare Pages, Netlify, etc.)
 
