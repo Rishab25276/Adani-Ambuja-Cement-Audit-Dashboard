@@ -2118,17 +2118,16 @@
                             datalabels: {
                                 display: true,
                                 anchor: 'end',
-                                align: 'top',
-                                offset: 6,
+                                align: 'end',
+                                offset: -25,
                                 formatter: (value) => value > 0 ? `${parseFloat(value).toFixed(1)}%` : '',
                                 color: '#FFFFFF',
                                 font: { 
                                     weight: 'bold',
-                                    size: 13
+                                    size: 16
                                 },
-                                backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                                borderRadius: 4,
-                                padding: { top: 5, bottom: 5, left: 8, right: 8 }
+                                textStrokeColor: 'rgba(0, 0, 0, 0.5)',
+                                textStrokeWidth: 3
                             }
                         },
                         scales: {
