@@ -2,7 +2,15 @@
 
 > **🌐 LIVE DASHBOARD**: https://rishab25276.github.io/Adani-Ambuja-Cement-Audit-Dashboard/
 
-A comprehensive, production-ready Quality Assurance audit analytics dashboard for Adani Recruitment Process monitoring. Features real-time data visualization, multi-dimensional filtering, and automated statistical analysis with a beautiful glass-morphism design.
+A comprehensive, production-ready Quality Assurance audit analytics dashboard for Adani Recruitment Process monitoring. Features real-time data visualization, multi-dimensional filtering, automated statistical analysis, **visible data labels on all charts**, and **smooth animated trendlines** with a beautiful glass-morphism design.
+
+## 🆕 Latest Updates (v4.5)
+- ✨ **Data labels visible on all charts** - See values instantly without hovering
+- ✨ **Animated trendlines** - Smooth 2s progressive drawing effect
+- ✨ **Enhanced point styles** - Larger, styled points with hover effects
+- ✨ **Color-coded labels** - Performance-based color coding
+- ✨ **Professional animations** - Staggered delays for sequential appearance
+- 📖 [View Full Chart Enhancements Documentation](./CHART_ENHANCEMENTS.md)
 
 ---
 
@@ -27,6 +35,7 @@ Simply visit: **https://rishab25276.github.io/Adani-Ambuja-Cement-Audit-Dashboar
 | **📊 Sample Data (Excel)** | [Download Power BI Dashboard Data.xlsx](https://github.com/Rishab25276/Adani-Ambuja-Cement-Audit-Dashboard/blob/main/Power%20BI%20Dashboard%20Data.xlsx) |
 | **💾 Auto-Load JSON** | [View sample-data.json](https://rishab25276.github.io/Adani-Ambuja-Cement-Audit-Dashboard/sample-data.json) |
 | **📖 Update Guide** | [DATA_UPDATE_GUIDE.md](./DATA_UPDATE_GUIDE.md) |
+| **✨ Chart Enhancements** | [CHART_ENHANCEMENTS.md](./CHART_ENHANCEMENTS.md) |
 
 ---
 
