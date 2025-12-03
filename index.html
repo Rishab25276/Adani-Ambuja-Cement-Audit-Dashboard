@@ -676,6 +676,30 @@
     </div>
 
     <script>
+        // Global Chart.js Configuration for Enhanced Data Labels and Animations
+        Chart.defaults.animation = {
+            duration: 2000,
+            easing: 'easeInOutQuart'
+        };
+        
+        Chart.defaults.plugins.legend.labels.usePointStyle = true;
+        Chart.defaults.plugins.legend.labels.padding = 15;
+        
+        // Custom animation for line charts with drawing effect
+        const drawingAnimation = {
+            onProgress: function(animation) {
+                const chartInstance = animation.chart;
+                const ctx = chartInstance.ctx;
+                ctx.save();
+                ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+                ctx.restore();
+            },
+            onComplete: function(animation) {
+                const chartInstance = animation.chart;
+                chartInstance.update('none');
+            }
+        };
+
         let dashboardData = {
             auditData: [],
             recruiterData: [],
@@ -1141,15 +1165,37 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: {
+                            animateRotate: true,
+                            animateScale: true,
+                            duration: 1500,
+                            easing: 'easeInOutQuart'
+                        },
                         plugins: {
-                            legend: { position: 'bottom' },
+                            legend: { 
+                                position: 'bottom',
+                                labels: {
+                                    font: { size: 13, weight: '600' },
+                                    padding: 15,
+                                    usePointStyle: true
+                                }
+                            },
                             datalabels: {
                                 formatter: (value, ctx) => {
                                     const sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                                    return value > 0 ? ((value * 100 / sum).toFixed(1) + '%') : '';
+                                    if (value === 0) return '';
+                                    const percentage = ((value * 100 / sum).toFixed(1));
+                                    return `${percentage}%\n(${value})`;
                                 },
                                 color: '#fff',
-                                font: { weight: 'bold', size: 14 }
+                                font: { 
+                                    weight: 'bold', 
+                                    size: 14,
+                                    lineHeight: 1.2
+                                },
+                                textAlign: 'center',
+                                anchor: 'center',
+                                align: 'center'
                             }
                         }
                     },
@@ -1274,15 +1320,45 @@
                             borderColor: '#3B82F6',
                             backgroundColor: 'rgba(59, 130, 246, 0.1)',
                             tension: 0.4,
-                            fill: true
+                            fill: true,
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            pointBackgroundColor: '#3B82F6',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: {
+                            duration: 2000,
+                            easing: 'easeInOutQuart',
+                            delay: (context) => {
+                                let delay = 0;
+                                if (context.type === 'data' && context.mode === 'default') {
+                                    delay = context.dataIndex * 150;
+                                }
+                                return delay;
+                            }
+                        },
                         plugins: {
                             legend: { display: false },
-                            datalabels: { display: false }
+                            datalabels: {
+                                display: true,
+                                align: 'top',
+                                offset: 8,
+                                formatter: (value) => value ? `${parseFloat(value).toFixed(1)}%` : '',
+                                color: '#3B82F6',
+                                font: { 
+                                    weight: 'bold', 
+                                    size: 12 
+                                },
+                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                borderRadius: 4,
+                                padding: { top: 4, bottom: 4, left: 6, right: 6 }
+                            }
                         },
                         scales: {
                             y: {
@@ -1291,7 +1367,8 @@
                                 ticks: { callback: value => value + '%' }
                             }
                         }
-                    }
+                    },
+                    plugins: [ChartDataLabels]
                 });
             }
         }
@@ -1390,6 +1467,8 @@
                             label: 'Audit Volume',
                             data: months.map(m => monthlyData[m].total),
                             backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1,
                             yAxisID: 'y'
                         }, {
                             label: 'Accuracy %',
@@ -1402,14 +1481,37 @@
                             borderColor: '#10B981',
                             backgroundColor: 'transparent',
                             yAxisID: 'y1',
-                            tension: 0.4
+                            tension: 0.4,
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            pointBackgroundColor: '#10B981',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: {
+                            duration: 1800,
+                            easing: 'easeInOutQuart'
+                        },
                         plugins: {
-                            datalabels: { display: false }
+                            datalabels: {
+                                display: (context) => {
+                                    return context.datasetIndex === 0; // Only show on bars
+                                },
+                                anchor: 'end',
+                                align: 'top',
+                                offset: 4,
+                                formatter: (value) => value > 0 ? value : '',
+                                color: '#1E293B',
+                                font: { 
+                                    weight: 'bold', 
+                                    size: 11 
+                                }
+                            }
                         },
                         scales: {
                             y: {
@@ -1425,7 +1527,8 @@
                                 max: 100
                             }
                         }
-                    }
+                    },
+                    plugins: [ChartDataLabels]
                 });
             }
         }
@@ -1501,29 +1604,60 @@
                         datasets: [{
                             label: 'Pass',
                             data: years.map(y => yearlyData[y].pass),
-                            backgroundColor: '#10B981'
+                            backgroundColor: '#10B981',
+                            borderColor: '#059669',
+                            borderWidth: 1
                         }, {
                             label: 'Fail',
                             data: years.map(y => yearlyData[y].fail),
-                            backgroundColor: '#EF4444'
+                            backgroundColor: '#EF4444',
+                            borderColor: '#DC2626',
+                            borderWidth: 1
                         }, {
                             label: 'NA',
                             data: years.map(y => yearlyData[y].na),
-                            backgroundColor: '#9CA3AF'
+                            backgroundColor: '#9CA3AF',
+                            borderColor: '#6B7280',
+                            borderWidth: 1
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: {
+                            duration: 1800,
+                            easing: 'easeInOutQuart',
+                            delay: (context) => {
+                                return context.datasetIndex * 300 + context.dataIndex * 100;
+                            }
+                        },
                         plugins: {
-                            legend: { position: 'bottom' },
-                            datalabels: { display: false }
+                            legend: { 
+                                position: 'bottom',
+                                labels: {
+                                    font: { size: 13, weight: '600' },
+                                    padding: 15,
+                                    usePointStyle: true
+                                }
+                            },
+                            datalabels: {
+                                display: true,
+                                anchor: 'center',
+                                align: 'center',
+                                formatter: (value) => value > 0 ? value : '',
+                                color: '#fff',
+                                font: { 
+                                    weight: 'bold', 
+                                    size: 12 
+                                }
+                            }
                         },
                         scales: {
                             x: { stacked: true },
                             y: { stacked: true }
                         }
-                    }
+                    },
+                    plugins: [ChartDataLabels]
                 });
             }
         }
@@ -1689,25 +1823,49 @@
                             backgroundColor: top10.map(r => 
                                 parseFloat(r.accuracy) >= 95 ? '#10B981' :
                                 parseFloat(r.accuracy) >= 85 ? '#F59E0B' : '#EF4444'
-                            )
+                            ),
+                            borderColor: top10.map(r => 
+                                parseFloat(r.accuracy) >= 95 ? '#059669' :
+                                parseFloat(r.accuracy) >= 85 ? '#D97706' : '#DC2626'
+                            ),
+                            borderWidth: 2
                         }]
                     },
                     options: {
                         indexAxis: 'y',
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: {
+                            duration: 1800,
+                            easing: 'easeInOutQuart',
+                            delay: (context) => {
+                                return context.dataIndex * 100;
+                            }
+                        },
                         plugins: {
                             legend: { display: false },
                             datalabels: {
                                 anchor: 'end',
                                 align: 'right',
+                                offset: 4,
                                 formatter: v => v + '%',
                                 color: '#1E293B',
-                                font: { weight: 'bold' }
+                                font: { 
+                                    weight: 'bold',
+                                    size: 13
+                                },
+                                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                                borderRadius: 4,
+                                padding: { top: 4, bottom: 4, left: 6, right: 6 }
                             }
                         },
                         scales: {
-                            x: { max: 100 }
+                            x: { 
+                                max: 100,
+                                ticks: {
+                                    callback: value => value + '%'
+                                }
+                            }
                         }
                     },
                     plugins: [ChartDataLabels]
@@ -1827,21 +1985,56 @@
                                 p.accuracy === 'N/A' ? '#9CA3AF' :
                                 parseFloat(p.accuracy) >= 95 ? '#10B981' :
                                 parseFloat(p.accuracy) >= 85 ? '#F59E0B' : '#EF4444'
-                            )
+                            ),
+                            borderColor: top15.map(p => 
+                                p.accuracy === 'N/A' ? '#6B7280' :
+                                parseFloat(p.accuracy) >= 95 ? '#059669' :
+                                parseFloat(p.accuracy) >= 85 ? '#D97706' : '#DC2626'
+                            ),
+                            borderWidth: 2
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: {
+                            duration: 1800,
+                            easing: 'easeInOutQuart',
+                            delay: (context) => {
+                                return context.dataIndex * 80;
+                            }
+                        },
                         plugins: {
                             legend: { display: false },
-                            datalabels: { display: false }
+                            datalabels: {
+                                display: true,
+                                anchor: 'end',
+                                align: 'top',
+                                offset: 4,
+                                formatter: (value) => value > 0 ? `${parseFloat(value).toFixed(1)}%` : '',
+                                color: '#1E293B',
+                                font: { 
+                                    weight: 'bold',
+                                    size: 11
+                                },
+                                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                                borderRadius: 3,
+                                padding: { top: 3, bottom: 3, left: 5, right: 5 }
+                            }
                         },
                         scales: {
-                            y: { max: 100, title: { display: true, text: 'Accuracy %' } },
+                            y: { 
+                                max: 100, 
+                                title: { 
+                                    display: true, 
+                                    text: 'Accuracy %',
+                                    font: { size: 13, weight: 'bold' }
+                                }
+                            },
                             x: { ticks: { maxRotation: 45, minRotation: 45 } }
                         }
-                    }
+                    },
+                    plugins: [ChartDataLabels]
                 });
             }
         }
@@ -1945,21 +2138,48 @@
                     datasets: [{
                         label: month1,
                         data: [stats1.totalPass, stats1.totalFail, stats1.totalNA, stats1.accuracy],
-                        backgroundColor: '#3B82F6'
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: '#3B82F6',
+                        borderWidth: 2
                     }, {
                         label: month2,
                         data: [stats2.totalPass, stats2.totalFail, stats2.totalNA, stats2.accuracy],
-                        backgroundColor: '#10B981'
+                        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                        borderColor: '#10B981',
+                        borderWidth: 2
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: {
+                        duration: 1500,
+                        easing: 'easeInOutQuart'
+                    },
                     plugins: {
-                        legend: { position: 'bottom' },
-                        datalabels: { display: false }
+                        legend: { 
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 13, weight: '600' },
+                                padding: 15,
+                                usePointStyle: true
+                            }
+                        },
+                        datalabels: {
+                            display: true,
+                            anchor: 'end',
+                            align: 'top',
+                            offset: 4,
+                            formatter: (value) => value > 0 ? Math.round(value) : '',
+                            color: '#1E293B',
+                            font: { 
+                                weight: 'bold',
+                                size: 12
+                            }
+                        }
                     }
-                }
+                },
+                plugins: [ChartDataLabels]
             });
 
             // Show comparison stats
@@ -2018,7 +2238,12 @@
                         ],
                         backgroundColor: 'rgba(59, 130, 246, 0.2)',
                         borderColor: '#3B82F6',
-                        borderWidth: 2
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: '#3B82F6',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
                     }, {
                         label: param2.substring(0, 30),
                         data: [
@@ -2029,23 +2254,57 @@
                         ],
                         backgroundColor: 'rgba(16, 185, 129, 0.2)',
                         borderColor: '#10B981',
-                        borderWidth: 2
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: '#10B981',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeInOutQuart'
+                    },
                     plugins: {
-                        legend: { position: 'bottom' },
-                        datalabels: { display: false }
+                        legend: { 
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 13, weight: '600' },
+                                padding: 15,
+                                usePointStyle: true
+                            }
+                        },
+                        datalabels: {
+                            display: true,
+                            formatter: (value) => value ? `${Math.round(value)}` : '',
+                            color: '#1E293B',
+                            font: { 
+                                weight: 'bold',
+                                size: 11
+                            },
+                            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                            borderRadius: 3,
+                            padding: { top: 3, bottom: 3, left: 4, right: 4 }
+                        }
                     },
                     scales: {
                         r: {
                             beginAtZero: true,
-                            max: 100
+                            max: 100,
+                            ticks: {
+                                stepSize: 20,
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
                         }
                     }
-                }
+                },
+                plugins: [ChartDataLabels]
             });
         }
 
@@ -2178,31 +2437,122 @@
                             borderColor: '#3B82F6',
                             backgroundColor: 'rgba(59, 130, 246, 0.1)',
                             tension: 0.4,
-                            fill: true
+                            fill: true,
+                            borderWidth: 3,
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                            pointBackgroundColor: '#3B82F6',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointHoverBorderWidth: 3
                         }, {
                             label: '3-Month Moving Average',
                             data: movingAvg,
                             borderColor: '#10B981',
-                            backgroundColor: 'transparent',
-                            borderDash: [5, 5],
-                            tension: 0.4
+                            backgroundColor: 'rgba(16, 185, 129, 0.05)',
+                            borderDash: [8, 4],
+                            tension: 0.4,
+                            fill: true,
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            pointBackgroundColor: '#10B981',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointStyle: 'rectRot'
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: {
+                            duration: 2500,
+                            easing: 'easeInOutQuart',
+                            delay: (context) => {
+                                let delay = 0;
+                                if (context.type === 'data' && context.mode === 'default') {
+                                    delay = context.dataIndex * 200 + context.datasetIndex * 100;
+                                }
+                                return delay;
+                            },
+                            onProgress: function(animation) {
+                                const chart = animation.chart;
+                                const ctx = chart.ctx;
+                                const meta = chart.getDatasetMeta(0);
+                                
+                                if (meta && meta.data.length > 0) {
+                                    ctx.save();
+                                    ctx.globalAlpha = 0.5;
+                                    ctx.restore();
+                                }
+                            }
+                        },
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
                         plugins: {
-                            legend: { position: 'bottom' },
-                            datalabels: { display: false }
+                            legend: { 
+                                position: 'bottom',
+                                labels: {
+                                    font: { size: 13, weight: '600' },
+                                    padding: 15,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle'
+                                }
+                            },
+                            datalabels: {
+                                display: true,
+                                align: (context) => {
+                                    const value = context.dataset.data[context.dataIndex];
+                                    return parseFloat(value) > 50 ? 'top' : 'bottom';
+                                },
+                                offset: 8,
+                                formatter: (value) => value ? `${parseFloat(value).toFixed(1)}%` : '',
+                                color: (context) => {
+                                    return context.datasetIndex === 0 ? '#3B82F6' : '#10B981';
+                                },
+                                font: { 
+                                    weight: 'bold', 
+                                    size: 11 
+                                },
+                                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                borderRadius: 4,
+                                padding: { top: 3, bottom: 3, left: 5, right: 5 }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                titleFont: { size: 14, weight: 'bold' },
+                                bodyFont: { size: 13 },
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + parseFloat(context.parsed.y).toFixed(2) + '%';
+                                    }
+                                }
+                            }
                         },
                         scales: {
                             y: {
                                 beginAtZero: true,
                                 max: 100,
-                                title: { display: true, text: 'Accuracy %' }
+                                title: { 
+                                    display: true, 
+                                    text: 'Accuracy %',
+                                    font: { size: 14, weight: 'bold' }
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
                             }
                         }
-                    }
+                    },
+                    plugins: [ChartDataLabels]
                 });
             }
         }
