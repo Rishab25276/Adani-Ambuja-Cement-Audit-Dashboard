@@ -544,7 +544,10 @@
         <div class="header">
             <h1>Adani Recruitment Process Audit Dashboard</h1>
             <p style="color: var(--text-secondary); margin-top: 8px;">
-                Real-time QA Audit Analytics & Performance Insights | v4.1 - Recruiter Filter Fixed Edition
+                Real-time QA Audit Analytics & Performance Insights | v4.4 - Auto-Load Edition
+                <span style="background: linear-gradient(135deg, var(--success-color), #059669); color: white; padding: 3px 10px; border-radius: 5px; font-size: 11px; margin-left: 10px; font-weight: 600;">
+                    <i class="fas fa-database"></i> Sample Data Pre-Loaded
+                </span>
             </p>
             <div style="margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap;">
                 <button class="btn btn-primary" onclick="toggleUploadSection()">
@@ -2786,8 +2789,96 @@
             }
         }
 
+        // Auto-load sample data on startup
+        async function loadSampleData() {
+            try {
+                console.log('🔄 Loading sample data...');
+                const response = await fetch('sample-data.json');
+                if (!response.ok) {
+                    throw new Error('Failed to load sample data');
+                }
+                const data = await response.json();
+                
+                // Load data into dashboard
+                dashboardData.auditData = data.auditData;
+                dashboardData.recruiterData = data.recruiterData;
+                
+                // Populate filters and render
+                populateFilters();
+                applySmartFilters();
+                
+                console.log(`✅ Sample data loaded! ${data.metadata.totalRecords} audit records, ${data.metadata.totalRecruiters} recruiter records`);
+                
+                // Show success message
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: linear-gradient(135deg, var(--adani-blue), var(--adani-light-blue));
+                    color: white;
+                    padding: 15px 25px;
+                    border-radius: 10px;
+                    box-shadow: var(--shadow-lg);
+                    z-index: 9999;
+                    animation: slideIn 0.5s ease-out;
+                `;
+                notification.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-check-circle" style="font-size: 20px;"></i>
+                        <div>
+                            <strong>Sample Data Loaded!</strong><br>
+                            <span style="font-size: 12px; opacity: 0.9;">${data.metadata.totalRecords} audit records ready to explore</span>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(notification);
+                
+                // Remove notification after 5 seconds
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.5s ease-out';
+                    setTimeout(() => notification.remove(), 500);
+                }, 5000);
+                
+            } catch (error) {
+                console.log('ℹ️ No sample data found. Please upload your own Excel file.');
+                console.error('Sample data load error:', error);
+            }
+        }
+
+        // Add animation styles for notification
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(400px);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
         // Initialize dashboard
-        console.log('Adani Recruitment Audit Dashboard v4.1 - Recruiter Filter Fixed Edition initialized');
+        console.log('Adani Recruitment Audit Dashboard v4.4 - Auto-Load Edition initialized');
+        
+        // Load sample data when page loads
+        $(document).ready(function() {
+            loadSampleData();
+        });
     
         // ============================================
         // AUDIO DESCRIPTION FUNCTIONALITY
