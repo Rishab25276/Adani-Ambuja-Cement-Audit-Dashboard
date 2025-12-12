@@ -3273,7 +3273,7 @@
                 populateFilters();
                 applySmartFilters();
                 
-                console.log(`✅ Sample data loaded! ${data.metadata.totalRecords} audit records, ${data.metadata.totalRecruiters} recruiter records`);
+                console.log(`✅ Sample data loaded! ${data.auditData.length} audit records, ${data.recruiterData.length} recruiter records`);
                 
                 // Show success message
                 const notification = document.createElement('div');
@@ -3294,7 +3294,7 @@
                         <i class="fas fa-check-circle" style="font-size: 20px;"></i>
                         <div>
                             <strong>Sample Data Loaded!</strong><br>
-                            <span style="font-size: 12px; opacity: 0.9;">${data.metadata.totalRecords} audit records ready to explore</span>
+                            <span style="font-size: 12px; opacity: 0.9;">${data.auditData.length} audit records ready to explore</span>
                         </div>
                     </div>
                 `;
