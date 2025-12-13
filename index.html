@@ -2708,7 +2708,7 @@
             // Process recruiter data
             dashboardData.filteredRecruiterData.forEach(rec => {
                 const month = rec['Month'];
-                const recruiterName = rec['Auditor / Recruiter Name']?.trim() || 'Unknown';
+                const recruiterName = rec['Recruiter Name']?.trim() || 'Unknown';
                 
                 if (!monthlyRecruiterPerformance[month]) {
                     monthlyRecruiterPerformance[month] = {};
@@ -2726,38 +2726,49 @@
                 }
                 
                 const stats = monthlyRecruiterPerformance[month][recruiterName];
-                stats.totalAudits += rec['Total Audits'] || 0;
-                stats.pass += rec['Pass'] || 0;
-                stats.fail += rec['Fail'] || 0;
                 
-                // Calculate accuracy
-                const totalChecked = stats.pass + stats.fail;
-                stats.accuracy = totalChecked > 0 ? ((stats.pass / totalChecked) * 100).toFixed(2) : 0;
+                // Each record represents one audit
+                stats.totalAudits += 1;
                 
-                // Calculate quality score (weighted: 60% accuracy + 40% volume)
-                const maxVolume = Math.max(...Object.values(monthlyRecruiterPerformance[month]).map(r => r.totalAudits || 1));
-                const volumeScore = maxVolume > 0 ? (stats.totalAudits / maxVolume) * 100 : 0;
-                stats.qualityScore = (parseFloat(stats.accuracy) * 0.6) + (volumeScore * 0.4);
+                // Check Audit Score (1.0 = Pass, 0.0 = Fail)
+                const auditScore = rec['Audit Score'] || 0;
+                if (auditScore === 1.0 || auditScore === 1) {
+                    stats.pass += 1;
+                } else {
+                    stats.fail += 1;
+                }
             });
 
             // Find winner for each month
             const monthlyWinners = [];
             Object.entries(monthlyRecruiterPerformance).forEach(([month, recruiters]) => {
                 const recruiterArray = Object.values(recruiters);
+                
+                // Calculate accuracy and quality score for each recruiter
+                const maxVolume = Math.max(...recruiterArray.map(r => r.totalAudits));
+                recruiterArray.forEach(stats => {
+                    const totalChecked = stats.pass + stats.fail;
+                    stats.accuracy = totalChecked > 0 ? ((stats.pass / totalChecked) * 100).toFixed(2) : 0;
+                    
+                    // Calculate quality score (weighted: 60% accuracy + 40% volume)
+                    const volumeScore = maxVolume > 0 ? (stats.totalAudits / maxVolume) * 100 : 0;
+                    stats.qualityScore = (parseFloat(stats.accuracy) * 0.6) + (volumeScore * 0.4);
+                });
+                
                 if (recruiterArray.length > 0) {
                     // Sort by quality score (accuracy weighted with volume)
                     recruiterArray.sort((a, b) => b.qualityScore - a.qualityScore);
                     const winner = recruiterArray[0];
                     
                     // Selection criteria
-                    const meetsMinimum = winner.totalAudits >= 10 && parseFloat(winner.accuracy) >= 85;
+                    const meetsMinimum = winner.totalAudits >= 5 && parseFloat(winner.accuracy) >= 75;
                     
                     monthlyWinners.push({
                         month: month,
                         winner: meetsMinimum ? winner : null,
                         topPerformers: recruiterArray.slice(0, 5),
                         meetsMinimum: meetsMinimum,
-                        minCriteria: "Minimum 10 audits & 85% accuracy required"
+                        minCriteria: "Minimum 5 audits & 75% accuracy required"
                     });
                 }
             });
@@ -2772,13 +2783,13 @@
                         <div class="stat-card">
                             <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 5px;">Selection Criteria</div>
                             <div class="stat-value" style="font-size: 18px; color: var(--adani-blue);">
-                                <i class="fas fa-check-circle"></i> Min. 10 Audits
+                                <i class="fas fa-check-circle"></i> Min. 5 Audits
                             </div>
                         </div>
                         <div class="stat-card">
                             <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 5px;">Minimum Accuracy</div>
                             <div class="stat-value" style="font-size: 18px; color: var(--success-color);">
-                                <i class="fas fa-percentage"></i> 85%
+                                <i class="fas fa-percentage"></i> 75%
                             </div>
                         </div>
                         <div class="stat-card">
