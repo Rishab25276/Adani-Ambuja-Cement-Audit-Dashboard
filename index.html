@@ -65,21 +65,23 @@
         .logo {
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: center;
             margin-bottom: 30px;
+            padding: 10px 0;
         }
         
         .logo-icon {
-            width: 45px;
-            height: 45px;
-            background: linear-gradient(135deg, var(--adani-blue), var(--adani-light-blue));
-            border-radius: 12px;
+            width: 140px;
+            height: auto;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 22px;
-            font-weight: bold;
+        }
+        
+        .logo-icon img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
         }
         
         .logo-text {
@@ -505,8 +507,9 @@
 <body>
     <aside class="sidebar">
         <div class="logo">
-            <div class="logo-icon">A</div>
-            <div class="logo-text">Adani Audit</div>
+            <div class="logo-icon">
+                <img src="adani-logo.png" alt="Adani Cement Logo">
+            </div>
         </div>
         
         <ul class="nav-menu">
