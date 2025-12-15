@@ -2179,7 +2179,11 @@
 
             // Get unique months and parameters
             const months = [...new Set(dashboardData.filteredData.map(r => r.Month).filter(m => m))];
-            const parameters = [...new Set(dashboardData.filteredData.map(r => r.Parameter).filter(p => p))];
+            // Handle both 'Parameter' and 'Parameter ' column names
+            const parameters = [...new Set(dashboardData.filteredData.map(r => {
+                const param = r['Parameter'] || r['Parameter '] || '';
+                return param ? param.toString().trim() : '';
+            }).filter(p => p))].sort();
 
             const html = `
                 <div class="insights-panel">
@@ -2338,8 +2342,15 @@
 
             if (!param1 || !param2) return;
 
-            const param1Data = dashboardData.filteredData.filter(r => r.Parameter === param1);
-            const param2Data = dashboardData.filteredData.filter(r => r.Parameter === param2);
+            // Handle both 'Parameter' and 'Parameter ' column names
+            const param1Data = dashboardData.filteredData.filter(r => {
+                const param = (r['Parameter'] || r['Parameter '] || '').toString().trim();
+                return param === param1;
+            });
+            const param2Data = dashboardData.filteredData.filter(r => {
+                const param = (r['Parameter'] || r['Parameter '] || '').toString().trim();
+                return param === param2;
+            });
 
             const stats1 = calculateStats(param1Data);
             const stats2 = calculateStats(param2Data);
