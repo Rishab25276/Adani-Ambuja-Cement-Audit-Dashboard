@@ -1156,64 +1156,75 @@
 
             document.getElementById('dashboardContent').innerHTML = html;
 
-            const canvas = document.getElementById('distributionChart');
-            if (canvas) {
-                // Destroy existing chart if it exists
-                if (dashboardData.charts.distribution) {
-                    dashboardData.charts.distribution.destroy();
-                }
-                
-                // Get fresh context
-                const ctx = canvas.getContext('2d');
-                dashboardData.charts.distribution = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Pass', 'Fail', 'NA'],
-                        datasets: [{
-                            data: [stats.totalPass, stats.totalFail, stats.totalNA],
-                            backgroundColor: ['#10B981', '#EF4444', '#9CA3AF']
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        animation: {
-                            animateRotate: true,
-                            animateScale: true,
-                            duration: 1500,
-                            easing: 'easeInOutQuart'
-                        },
-                        plugins: {
-                            legend: { 
-                                position: 'bottom',
-                                labels: {
-                                    font: { size: 13, weight: '600' },
-                                    padding: 15,
-                                    usePointStyle: true
+            // Use setTimeout to ensure DOM is fully ready after innerHTML update
+            setTimeout(() => {
+                const canvas = document.getElementById('distributionChart');
+                if (canvas) {
+                    // Destroy existing chart if it exists
+                    if (dashboardData.charts.distribution) {
+                        dashboardData.charts.distribution.destroy();
+                        dashboardData.charts.distribution = null;
+                    }
+                    
+                    // Get fresh context
+                    const ctx = canvas.getContext('2d');
+                    if (ctx) {
+                        dashboardData.charts.distribution = new Chart(ctx, {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['Pass', 'Fail', 'NA'],
+                                datasets: [{
+                                    data: [stats.totalPass, stats.totalFail, stats.totalNA],
+                                    backgroundColor: ['#10B981', '#EF4444', '#9CA3AF']
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                animation: {
+                                    animateRotate: true,
+                                    animateScale: true,
+                                    duration: 1500,
+                                    easing: 'easeInOutQuart'
+                                },
+                                plugins: {
+                                    legend: { 
+                                        position: 'bottom',
+                                        labels: {
+                                            font: { size: 13, weight: '600' },
+                                            padding: 15,
+                                            usePointStyle: true
+                                        }
+                                    },
+                                    datalabels: {
+                                        formatter: (value, ctx) => {
+                                            const sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                            if (value === 0) return '';
+                                            const percentage = ((value * 100 / sum).toFixed(1));
+                                            return `${percentage}%\n(${value})`;
+                                        },
+                                        color: '#fff',
+                                        font: { 
+                                            weight: 'bold', 
+                                            size: 14,
+                                            lineHeight: 1.2
+                                        },
+                                        textAlign: 'center',
+                                        anchor: 'center',
+                                        align: 'center'
+                                    }
                                 }
                             },
-                            datalabels: {
-                                formatter: (value, ctx) => {
-                                    const sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                                    if (value === 0) return '';
-                                    const percentage = ((value * 100 / sum).toFixed(1));
-                                    return `${percentage}%\n(${value})`;
-                                },
-                                color: '#fff',
-                                font: { 
-                                    weight: 'bold', 
-                                    size: 14,
-                                    lineHeight: 1.2
-                                },
-                                textAlign: 'center',
-                                anchor: 'center',
-                                align: 'center'
-                            }
-                        }
-                    },
-                    plugins: [ChartDataLabels]
-                });
-            }
+                            plugins: [ChartDataLabels]
+                        });
+                        console.log('✅ Distribution chart created successfully');
+                    } else {
+                        console.error('❌ Failed to get 2D context for distributionChart');
+                    }
+                } else {
+                    console.error('❌ distributionChart canvas not found in DOM');
+                }
+            }, 50); // Small delay to ensure DOM is ready
         }
 
         // Weekly View
@@ -2263,13 +2274,26 @@
             const stats1 = calculateStats(month1Data);
             const stats2 = calculateStats(month2Data);
 
-            const canvas = document.getElementById('monthComparisonChart');
-            if (dashboardData.charts.monthComparison) {
-                dashboardData.charts.monthComparison.destroy();
-            }
+            // Use setTimeout to ensure canvas is ready
+            setTimeout(() => {
+                const canvas = document.getElementById('monthComparisonChart');
+                if (!canvas) {
+                    console.error('❌ monthComparisonChart canvas not found in DOM');
+                    return;
+                }
+                
+                if (dashboardData.charts.monthComparison) {
+                    dashboardData.charts.monthComparison.destroy();
+                    dashboardData.charts.monthComparison = null;
+                }
 
-            const ctx = canvas.getContext('2d');
-            dashboardData.charts.monthComparison = new Chart(ctx, {
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    console.error('❌ Failed to get 2D context for monthComparisonChart');
+                    return;
+                }
+
+                dashboardData.charts.monthComparison = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: ['Pass', 'Fail', 'NA', 'Accuracy %'],
@@ -2343,13 +2367,19 @@
                     </div>
                 </div>
             `;
+            }, 50); // Small delay to ensure canvas is ready
         }
 
         function updateParamComparison() {
             const param1 = document.getElementById('param1Select').value;
             const param2 = document.getElementById('param2Select').value;
 
-            if (!param1 || !param2) return;
+            console.log('🔄 updateParamComparison called:', param1, param2);
+
+            if (!param1 || !param2) {
+                console.log('⚠️ Missing parameter selection');
+                return;
+            }
 
             // Handle both 'Parameter' and 'Parameter ' column names
             const param1Data = dashboardData.filteredData.filter(r => {
@@ -2361,16 +2391,31 @@
                 return param === param2;
             });
 
+            console.log('📊 Found data:', param1Data.length, 'records for param1,', param2Data.length, 'records for param2');
+
             const stats1 = calculateStats(param1Data);
             const stats2 = calculateStats(param2Data);
 
-            const canvas = document.getElementById('paramComparisonChart');
-            if (dashboardData.charts.paramComparison) {
-                dashboardData.charts.paramComparison.destroy();
-            }
+            // Use setTimeout to ensure canvas is ready
+            setTimeout(() => {
+                const canvas = document.getElementById('paramComparisonChart');
+                if (!canvas) {
+                    console.error('❌ paramComparisonChart canvas not found in DOM');
+                    return;
+                }
+                
+                if (dashboardData.charts.paramComparison) {
+                    dashboardData.charts.paramComparison.destroy();
+                    dashboardData.charts.paramComparison = null;
+                }
 
-            const ctx = canvas.getContext('2d');
-            dashboardData.charts.paramComparison = new Chart(ctx, {
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    console.error('❌ Failed to get 2D context for paramComparisonChart');
+                    return;
+                }
+
+                dashboardData.charts.paramComparison = new Chart(ctx, {
                 type: 'radar',
                 data: {
                     labels: ['Accuracy %', 'Pass Count', 'Sample Size', 'Error Rate Inverse'],
@@ -2452,6 +2497,8 @@
                 },
                 plugins: [ChartDataLabels]
             });
+            console.log('✅ Parameter comparison chart created successfully');
+            }, 50); // Small delay to ensure canvas is ready
         }
 
         // Trends View
